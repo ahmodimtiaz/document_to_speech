@@ -1,0 +1,323 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .dropzone {
+        border: 2px dashed var(--bs-secondary);
+        border-radius: 5px;
+        background-color: rgba(var(--bs-dark-rgb), 0.6);
+        min-height: 180px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .dropzone:hover {
+        border-color: var(--bs-primary);
+    }
+
+    .dropzone .dz-message {
+        text-align: center;
+        margin: 2em 0;
+    }
+
+    .features-icon {
+        font-size: 2.5rem;
+        color: var(--bs-info);
+    }
+
+    .text-preview {
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: rgba(var(--bs-dark-rgb), 0.6);
+        border-radius: 5px;
+        padding: 15px;
+    }
+
+    .audio-controls {
+        background-color: rgba(var(--bs-dark-rgb), 0.6);
+        border-radius: 5px;
+        padding: 15px;
+    }
+
+    #progressContainer {
+        display: none;
+    }
+
+    #playPauseBtn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 mb-4 text-center">
+            <i class="fas fa-file-audio me-2"></i> Document to Speech Converter
+        </h1>
+        <p class="lead text-center">
+            Upload your document, and we'll convert it to natural-sounding speech with support for multiple languages.
+        </p>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="d-flex flex-column align-items-center text-center p-3">
+            <i class="fas fa-file-upload features-icon mb-3"></i>
+            <h3>Upload</h3>
+            <p>Support for PDFs, images, and text files</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="d-flex flex-column align-items-center text-center p-3">
+            <i class="fas fa-language features-icon mb-3"></i>
+            <h3>Multilingual</h3>
+            <p>Automatic language detection and voice options</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="d-flex flex-column align-items-center text-center p-3">
+            <i class="fas fa-headphones features-icon mb-3"></i>
+            <h3>Listen</h3>
+            <p>Natural-sounding speech with playback controls</p>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="input-method-tabs mb-4">
+            <ul class="nav nav-pills nav-fill mb-3" id="inputTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active btn-lg shadow" id="upload-tab" data-bs-toggle="tab" data-bs-target="#uploadTab" 
+                        type="button" role="tab" aria-controls="uploadTab" aria-selected="true">
+                        <i class="fas fa-upload me-2"></i><strong>Upload Document</strong>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link btn-lg shadow" id="text-tab" data-bs-toggle="tab" data-bs-target="#textTab" 
+                        type="button" role="tab" aria-controls="textTab" aria-selected="false">
+                        <i class="fas fa-keyboard me-2"></i><strong>Direct Text Input</strong>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="tab-content" id="inputTabContent">
+            <!-- Document Upload Tab -->
+            <div class="tab-pane fade show active" id="uploadTab" role="tabpanel" aria-labelledby="upload-tab">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4><i class="fas fa-upload me-2"></i>Upload Document</h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="/upload" class="dropzone" id="documentDropzone">
+                            <div class="dz-message">
+                                <div><i class="fas fa-cloud-upload-alt fa-3x mb-3"></i></div>
+                                <h4>Drag and drop files here</h4>
+                                <p class="text-muted">- or -</p>
+                                <button type="button" class="btn btn-outline-primary">Browse files</button>
+                                <p class="mt-3 text-muted small">Supports PDF, JPG, PNG, and TXT files</p>
+                            </div>
+                        </form>
+                        
+                        <div id="uploadError" class="alert alert-danger mt-3" style="display: none;"></div>
+                        
+                        <div id="processingContainer" class="mt-3" style="display: none;">
+                            <div class="card border-info">
+                                <div class="card-header bg-info bg-opacity-25 text-info">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            <span id="processingStage">Processing Document</span>
+                                        </div>
+                                        <div id="processingPercentage" class="badge bg-info">0%</div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div id="processingProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                                             role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <p id="processingStatusMessage" class="mb-0 small text-muted">Initializing...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Direct Text Input Tab -->
+            <div class="tab-pane fade" id="textTab" role="tabpanel" aria-labelledby="text-tab">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4><i class="fas fa-keyboard me-2"></i>Direct Text Input</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="directTextInput" class="form-label">Enter text to convert to speech</label>
+                            <textarea id="directTextInput" class="form-control" rows="8" 
+                                placeholder="Type or paste your text here..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button id="processTextBtn" class="btn btn-primary btn-lg fw-bold shadow">
+                                <i class="fas fa-check me-2"></i>Process Text
+                            </button>
+                        </div>
+                        
+                        <div id="directTextError" class="alert alert-danger mt-3" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="textPreviewCard" class="card mb-4" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-file-alt me-2"></i>Text Preview</h4>
+                <span id="detectedLanguageBadge" class="badge bg-info">English</span>
+            </div>
+            <div class="card-body">
+                <div id="textPreview" class="text-preview">
+                    <p class="text-muted text-center">No text to display</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div id="speechOptionsCard" class="card mb-4" style="display: none;">
+            <div class="card-header">
+                <h4><i class="fas fa-sliders-h me-2"></i>Speech Options</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="languageSelect" class="form-label">Language</label>
+                        <select id="languageSelect" class="form-select">
+                            <option value="en">English</option>
+                            <option value="fr">French</option>
+                            <option value="es">Spanish</option>
+                            <option value="de">German</option>
+                            <option value="it">Italian</option>
+                            <option value="pt">Portuguese</option>
+                            <option value="ru">Russian</option>
+                            <option value="zh-cn">Chinese (Simplified)</option>
+                            <option value="ja">Japanese</option>
+                            <option value="ar">Arabic</option>
+                            <option value="hi">Hindi</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Voice Gender</label>
+                        <div class="d-flex">
+                            <div class="form-check me-4">
+                                <input class="form-check-input" type="radio" name="genderRadio" id="femaleVoice" value="female" checked>
+                                <label class="form-check-label" for="femaleVoice">
+                                    <i class="fas fa-female me-2"></i>Female
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="genderRadio" id="maleVoice" value="male">
+                                <label class="form-check-label" for="maleVoice">
+                                    <i class="fas fa-male me-2"></i>Male
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid mt-2">
+                    <button id="generateSpeechBtn" class="btn btn-primary btn-lg fw-bold shadow">
+                        <i class="fas fa-microphone me-2"></i>Generate Speech
+                    </button>
+                </div>
+                
+                <div id="generateError" class="alert alert-danger mt-3" style="display: none;"></div>
+                
+                <div id="generateProcessingContainer" class="mt-3" style="display: none;">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary bg-opacity-25 text-primary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                    <span id="generateProcessingStage">Generating Speech</span>
+                                </div>
+                                <div id="generateProcessingPercentage" class="badge bg-primary">0%</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div id="generateProcessingProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                     role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p id="generateProcessingStatusMessage" class="mb-0 small text-muted">Initializing speech generation...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="audioPlayerCard" class="card mb-4" style="display: none;">
+            <div class="card-header">
+                <h4><i class="fas fa-headphones me-2"></i>Audio Player</h4>
+            </div>
+            <div class="card-body">
+                <div class="audio-controls">
+                    <div class="d-flex justify-content-center mb-3">
+                        <button id="playPauseBtn" class="btn btn-primary btn-lg">
+                            <i id="playPauseIcon" class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="progressContainer" class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span id="currentTime">0:00</span>
+                            <span id="totalTime">0:00</span>
+                        </div>
+                        <input type="range" class="form-range" min="0" max="100" step="1" id="audioProgress">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8 offset-md-2">
+                            <label for="speedControl" class="form-label">Playback Speed</label>
+                            <select id="speedControl" class="form-select">
+                                <option value="0.5">0.5x (Slow)</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1x (Normal)</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x (Fast)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <div class="d-flex justify-content-between">
+                                <button id="restartBtn" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button id="downloadBtn" class="btn btn-success btn-lg">
+                                    <i class="fas fa-download me-2"></i>Download Audio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dropzone-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

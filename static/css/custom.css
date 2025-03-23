@@ -1,0 +1,123 @@
+/* Custom styles for the Document to Speech app */
+
+/* Main container - add some padding for better spacing */
+.container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* Improve the drop zone styling */
+.dropzone {
+    transition: all 0.3s ease;
+}
+
+.dropzone:hover {
+    box-shadow: 0 0 10px rgba(var(--bs-info-rgb), 0.5);
+}
+
+/* Style for the text preview area */
+.text-preview {
+    border: 1px solid var(--bs-border-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Improve button hover effects */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Add nice hover effects to the feature icons */
+.features-icon {
+    transition: all 0.3s ease;
+}
+
+.col-md-4:hover .features-icon {
+    transform: scale(1.1);
+    color: var(--bs-primary);
+}
+
+/* Audio player styling */
+#playPauseBtn {
+    transition: all 0.2s ease;
+}
+
+#playPauseBtn:hover {
+    transform: scale(1.1);
+}
+
+/* Enhanced tabs styling */
+.input-method-tabs .nav-pills .nav-link {
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin: 0 5px;
+}
+
+.input-method-tabs .nav-pills .nav-link:hover {
+    transform: translateY(-3px);
+}
+
+.input-method-tabs .nav-pills .nav-link.active {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Enhanced button styling */
+#processTextBtn, #generateSpeechBtn {
+    transition: all 0.3s ease;
+}
+
+#processTextBtn:hover, #generateSpeechBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Footer styling */
+footer .text-muted {
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+footer .text-muted:hover {
+    opacity: 1;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+    .features-icon {
+        font-size: 2rem;
+    }
+    
+    h1.display-5 {
+        font-size: 2.5rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+    
+    .input-method-tabs .nav-pills .nav-link {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+    
+    footer .text-muted {
+        font-size: 0.8rem;
+    }
+}
